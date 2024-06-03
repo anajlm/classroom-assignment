@@ -1,68 +1,75 @@
-#import fix_and_optimize
+import relax_and_fix
 import simulated_annealing
 import pandas as pd
 import numpy as np
+import csv
 
-sa = simulated_annealing.SimulatedAnnealing()
 
-# Read data from CSV files
-disciplinas_df = pd.read_csv('..\data\disciplinas.csv', header=0)
-salas_df = pd.read_csv('..\data\salas.csv', header=0)
 
-N = disciplinas_df['N'].values
-C = salas_df['C'].values
-D = salas_df['D'].values
+# # Read data from CSV files
+# alunos_por_disciplina_df = pd.read_csv('..\data\disciplina.csv', index_col='Disciplina')
+# # salas_df = pd.read_csv('..\data\salas.csv', header=0)
 
-#initial_solution = fix_and_optimize.run()
-# temporary random initial solution
+# alunos_por_disciplina_array = alunos_por_disciplina_df.values.flatten()
+# print(alunos_por_disciplina_array)
 
-def order_ascending(array):
-    # Crie uma lista de tuplas (índice, elemento)
-    indexed_array = [(index, array[index]) for index, element in enumerate(array)]
 
-    # Ordene a lista de tuplas com base no valor do elemento em ordem crescente
-    sorted_indexed_array = sorted(indexed_array, key=lambda x: x[1])
+# Read data from the CSV file and pad the arrays to handle one-based indexing
+# Ler dados do arquivo de capacidades das salas
+C = {}
+with open('..\data\capacidade_salas.csv', newline='') as csvfile:
+    reader = csv.reader(csvfile, delimiter=',', quotechar=';')
+    next(reader)  # Skip the header
+    for row in reader:
+        room = int(row[0])
+        C[room] = int(row[1])
 
-    # Extraia os índices da lista de tuplas ordenadas
-    sorted_indexes = [index for index, element in sorted_indexed_array]
-    
-    return sorted_indexes
+# Ler dados do arquivo de número de alunos das disciplinas
+N = {}
+with open('..\data\disciplinas.csv', newline='') as csvfile:
+    reader = csv.reader(csvfile, delimiter=',', quotechar=';')
+    next(reader)
+    for row in reader:
+        discipline = int(row[0])
+        N[discipline] = int(row[1])
+        
+# Ler dados do arquivo de distancia das salas
+D = {}
+with open('..\data\distancia_salas.csv', newline='') as csvfile:
+    reader = csv.reader(csvfile, delimiter=',', quotechar=';')
+    next(reader)
+    for row in reader:
+        room = int(row[0])  # Room number (first column)
+        distances = list(map(int, row[1:]))  # Distances (remaining columns)
+        # Create a dictionary for the distances with discipline numbers as keys
+        D[room] = {i + 1: distances[i] for i in range(len(distances))}
 
-def order_descending(array):
-    # Create a list of tuples (index, element)
-    indexed_array = [(index, array[index]) for index, element in enumerate(array)]
+# print(C)
+# print(D[1])
+# print(N)
+# Display the first few entries to verify
+# print("First few entries in the dictionary D:")
+# for key in list(D.keys())[:5]:
+#     print(f"Sala {key}: {D[key]}")
 
-    # Sort the list of tuples based on element value in descending order
-    sorted_indexed_array = sorted(indexed_array, key=lambda x: x[1], reverse=True)
+# N = disciplinas_df['N'].values
+# C = salas_df['C'].values
+# D = salas_df['D'].values
 
-    # Extract the indexes from the sorted list of tuples
-    sorted_indexes = [index for index, element in sorted_indexed_array]
-    
-    return sorted_indexes
+# sa = simulated_annealing.SimulatedAnnealing()
+raf = relax_and_fix.RelaxAndFix(N, C, D, 100, 100)
+initial_solution = raf.compute_solution()
 
-# Ordenar as disciplinas e salas pela quantidade de alunos e capacidade
-N_sorted = order_descending(N)
-print(N_sorted)
-D_sorted = order_ascending(D)
-print(D_sorted)
+print(initial_solution)
 
-# Initialize the solution (x) matrix
-initial_solution = np.zeros((len(N), len(D)), dtype=int)
-for i in range(len(N)):
-    initial_solution[N_sorted[i], D_sorted[i]] = 1
-    # as a vector
-    #initial_solution[D_sorted[i]] = N_sorted[i]
-    
-# print(initial_solution)
+# neighbor = sa.solution_to_neighbor(initial_solution, D_sorted)
+# print(neighbor)
 
-neighbor = sa.solution_to_neighbor(initial_solution, D_sorted)
-print(neighbor)
+# solution = sa.neighbor_to_solution(neighbor)
+# print(np.array_equal(solution,initial_solution))
 
-solution = sa.neighbor_to_solution(neighbor)
-print(np.array_equal(solution,initial_solution))
-
-swaped = sa.get_neighbor(neighbor)
-print(swaped)
+# swaped = sa.get_neighbor(neighbor)
+# print(swaped)
 
 # Ensure each classroom is ocupied by a class
 # for i in range(len(N)):
