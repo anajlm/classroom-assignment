@@ -23,7 +23,7 @@ with open('..\data\disciplinas.csv', newline='') as csvfile:
         discipline = int(row[0])
         N[discipline] = int(row[1])
         
-# Reading distance of each classroom from the building of each discipline data
+# Reading distance of each classroom to the building of each discipline data
 D = {}
 with open('..\data\distancia_salas.csv', newline='') as csvfile:
     reader = csv.reader(csvfile, delimiter=',', quotechar=';')
@@ -35,8 +35,8 @@ with open('..\data\distancia_salas.csv', newline='') as csvfile:
 
 
 # Get a initial solution by appling Relax-and-Fix
-raf = relax_and_fix.RelaxAndFix(N, C, D, 100, 100)
-initial_solution = raf.compute_solution()
+rf = relax_and_fix.RelaxAndFix(N, C, D, 100, 100)
+initial_solution = rf.compute_solution()
 print(initial_solution)
 
 # Use the initial solution to obtain the optimized solution with Simulated Annealing

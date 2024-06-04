@@ -46,7 +46,7 @@ class RelaxAndFix:
         )
         
     def _relax_and_fix(self, x, num_disciplines, num_rooms):
-        # Stage 1: Relax and optimize for the first third of the disciplines
+        # Stage 1: Unfix the first third of variables
         if self.verbose:
             print("First iteration of relax and fix...")
         for i in range(1, num_disciplines + 1):
@@ -59,7 +59,7 @@ class RelaxAndFix:
         self.model.optimize()
         self._found_a_valid_solution()
 
-        # Stage 2: Fix the first third and relax the second third of the disciplines
+        # Stage 2: Fix the first third and unrelax the second third of the variables
         if self.verbose:
             print("Second iteration of relax and fix...")
         for i in range(1, num_disciplines + 1):
@@ -74,7 +74,7 @@ class RelaxAndFix:
         self.model.optimize()
         self._found_a_valid_solution()
 
-        # Stage 3: Fix the first two thirds and relax the last third of the disciplines
+        # Stage 3: Fix the first two thirds and unrelax the last third of the variables
         if self.verbose:
             print("Third iteration of relax and fix...")
         for i in range(1, num_disciplines + 1):
