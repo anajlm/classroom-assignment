@@ -33,15 +33,17 @@ with open('..\data\distancia_salas.csv', newline='') as csvfile:
         distances = list(map(int, row[1:]))
         D[room] = {i + 1: distances[i] for i in range(len(distances))}
 
-
 # Get a initial solution by appling Relax-and-Fix
 rf = relax_and_fix.RelaxAndFix(N, C, D, 100, 100)
 initial_solution = rf.compute_solution()
-print(initial_solution)
+#print(initial_solution)
 
 # Use the initial solution to obtain the optimized solution with Simulated Annealing
-# sa = simulated_annealing.SimulatedAnnealing()
-#optimized_solution = sa.compute_solutuion()
+sa = simulated_annealing.SimulatedAnnealing(N, C, D, initial_solution, 100, 100)
+#neighbor = sa.solution_to_neighbor(initial_solution)
+#print(neighbor)
+optimal_solution = sa.compute_solution()
+print(optimal_solution)
 
 # neighbor = sa.solution_to_neighbor(initial_solution, D_sorted)
 # print(neighbor)

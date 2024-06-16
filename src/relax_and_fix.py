@@ -113,8 +113,8 @@ class RelaxAndFix:
         if self.model.SolCount > 0:
             if self.verbose:
                 print("Best solution found:")
-                for v in self.model.getVars():
-                    print(f"{v.VarName} {v.X:g}")
+                # for v in self.model.getVars():
+                #     print(f"{v.VarName} {v.X:g}")
             return True
         else:
             print("Error: it was not able to find a valid solution")
@@ -126,9 +126,16 @@ class RelaxAndFix:
         self._define_objective_function(x, self.D, self.N, self.num_disciplines, self.num_rooms)
         self._relax_and_fix(x, self.num_disciplines, self.num_rooms)
         
-        for v in self.model.getVars():
-            print(f"{v.VarName} {v.X:g}")
+        # for v in self.model.getVars():
+        #     print(f"{v.VarName} {v.X:g}")
 
-        print(f"Obj: {self.model.ObjVal:g}")
+        # print(f"Obj: {self.model.ObjVal:g}")
+        
+        solution = {}
+        for i in range(1, self.num_disciplines + 1):
+            for j in range(1, self.num_rooms + 1):
+                solution[(i, j)] = x[i][j].X
 
         self.model.dispose()
+        
+        return solution
