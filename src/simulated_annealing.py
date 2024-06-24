@@ -42,7 +42,7 @@ class SimulatedAnnealing:
         f = 0
         for i in range(1, self.num_disciplines + 1):
             for j in range(1, self.num_rooms + 1):
-                f += x[(i, j)] * self.D[i][j] * self.N[i]
+                f += x[(i, j)] * self.D[j][i] * self.N[i]
         
         # Compute the penalty
         # We are only considering restriction 3 to compute the penalty,
@@ -61,15 +61,22 @@ class SimulatedAnnealing:
         # Choose a random cell
         i = np.random.randint(2, self.num_rooms + 1)
         
-        # Swap cells i and (i-1)
-        aux = neighbor[i]
-        neighbor[i] = neighbor[i-1]
-        neighbor[i-1] = aux
-        
+        num_desciplines = len(neighbor)
+        for index in range(1, num_desciplines + 1):
+            target_index = (i - index) % num_desciplines
+            # Skip index 0, as it start indexing from 1
+            if target_index != 0:
+                if (self.C[target_index] >= self.N[neighbor[i]]) and (self.C[i] >= self.N[neighbor[target_index]]):
+                    # Swap cells i and (i-1)
+                    aux = neighbor[i]
+                    neighbor[i] = neighbor[target_index]
+                    neighbor[target_index] = aux
+                    return neighbor
+        # Return current neighbor if it could not identify a valid neighbor for the random selected index
         return neighbor
     
     def _update_temperature(self, t):
-        return 0.9 * t
+        return 0.7 * t
     
     def _get_initial_temperature(self):
         dE = []
@@ -78,10 +85,10 @@ class SimulatedAnnealing:
         
         # Perform 100 pertubations and get the average dE
         for _ in range(100):
-            proposed_neighbor = self._shake_up_neighborhood(initial_neighbor)
+            proposed_neighbor = self._shake_up_neighborhood(initial_neighbor.copy())
             proposed_solution = self._neighbor_to_solution(proposed_neighbor)
             proposed_energy = self._objective_function(proposed_solution)
-            dE.append(abs(proposed_energy - initial_energy))
+            dE.append(proposed_energy - initial_energy)
         avg_dE = np.mean(dE)
         
         # Deduce t_0 from the equation exp(−∆E/t_0) = τ_0.
@@ -98,7 +105,7 @@ class SimulatedAnnealing:
         # Define the initial temperature t_k >= 0
         t_k = self._get_initial_temperature()
         # Define the number of iterations at each temperature
-        M_k = 100 * self.num_rooms
+        M_k = 10 * self.num_rooms if self.num_rooms < 10 else 100
         
         # Select a initial solution
         self.current_solution = self.initial_solution
@@ -116,7 +123,7 @@ class SimulatedAnnealing:
             while m <= M_k:
 
                 # Generate a new solution by shaking the neighborhood
-                proposed_neighbor = self._shake_up_neighborhood(self.current_neighbor)
+                proposed_neighbor = self._shake_up_neighborhood(self.current_neighbor.copy())
                 proposed_solution = self._neighbor_to_solution(proposed_neighbor)
 
                 # Compute the energy level of the new solution

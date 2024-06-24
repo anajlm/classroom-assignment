@@ -13,7 +13,6 @@ class RelaxAndFix:
     
     def _add_input_variables(self, d, s):
         self.model = Model(name='Classroom Assignment Problem')
-        self.model.setParam('TimeLimit', 10)
         
         x = {}
         for i in range(1, d + 1):
@@ -39,7 +38,7 @@ class RelaxAndFix:
 
     def _define_objective_function(self, x, D, N, d, s):
         self.model.setObjective(
-            quicksum(x[i][j] * D[i][j] * N[i]
+            quicksum(x[i][j] * D[j][i] * N[i]
                  for i in range(1, d + 1)
                  for j in range(1, s + 1)),
             sense=GRB.MINIMIZE
@@ -75,11 +74,12 @@ class RelaxAndFix:
         self._found_a_valid_solution()
 
         # Stage 3: Fix the first two thirds and unrelax the last third of the variables
+        # In this stage, there is a little overlap of unfixed variables from the previous iteration to avoid model from being unfeasible
         if self.verbose:
             print("Third iteration of relax and fix...")
         for i in range(1, num_disciplines + 1):
             for j in range(1, num_rooms + 1):
-                if i <= round(0.6 * num_disciplines):
+                if i <= round(0.5 * num_disciplines):
                     self._fix_variable(x[i][j], x[i][j].X)
                 else:
                     self._unrelax_variable(x[i][j], GRB.INTEGER)
@@ -94,7 +94,7 @@ class RelaxAndFix:
 
     def _unfix_variable(self, var, lb=0):
         var.lb = lb
-        var.ub = float('inf')
+        var.ub = 1
         return var
 
     def _relax_variable(self, var):
@@ -106,7 +106,7 @@ class RelaxAndFix:
     def _unrelax_variable(self, var, vtype, lower_default=0):
         var.vtype = vtype
         var.lb = lower_default  # Reset lower bound to default (0)
-        var.ub = float('inf')  # Reset upper bound to default (unconstrained)
+        var.ub = 1  # Reset upper bound to default (unconstrained)
         return var
 
     def _found_a_valid_solution(self):
