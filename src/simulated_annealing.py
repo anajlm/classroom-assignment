@@ -43,18 +43,7 @@ class SimulatedAnnealing:
         for i in range(1, self.num_disciplines + 1):
             for j in range(1, self.num_rooms + 1):
                 f += x[(i, j)] * self.D[j][i] * self.N[i]
-        
-        # Compute the penalty
-        # We are only considering restriction 3 to compute the penalty,
-        # since the restrictions 1 and 2 are automatically satisfied by the neighborhood 
-        penalty = 0
-        for i in range(1, self.num_disciplines + 1):
-            for j in range(1, self.num_rooms + 1):
-                g_ij = self.N[i] * x[(i, j)] - self.C[j]
-                penalty += max(0, g_ij) ** 2
 
-        f += self.u * penalty
-        
         return f        
     
     def _shake_up_neighborhood(self, neighbor):
